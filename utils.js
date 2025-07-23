@@ -57,10 +57,34 @@ function formatKeywordsForPrompt(keywords) {
     return keywords.join("、");
 }
 
+function personalityPromptFromAnswers(answers) {
+    const traits = [];
+
+    if (answers.q1 === 'はい') traits.push("ユーモアがあり");
+    if (answers.q2 === 'はい') traits.push("共感力が高く");
+    if (answers.q3 === 'はい') traits.push("几帳面で");
+    if (answers.q4 === 'はい') traits.push("思い出を大切にする");
+    if (answers.q5 === 'はい') traits.push("時事に関心がある");
+    if (answers.q6 === 'はい') traits.push("会話が少なく孤独を感じている可能性がある");
+    if (answers.q7 === 'はい') traits.push("新しい技術に苦手意識がある");
+    if (answers.q8 === 'はい') traits.push("家族とのつながりを大切にしている");
+    if (answers.q9 === 'はい') traits.push("他人を気遣う優しい人");
+    if (answers.q10 === 'はい') traits.push("季節の変化や行事に敏感");
+
+    if (traits.length === 0) {
+        return "この親御さんの傾向は不明です。";
+    }
+
+    return `この親御さんは、${traits.join("、")}ような傾向があります。`;
+}
+
+
+
 module.exports = {
     getImageSavePath,
     ensureTempDir,
     sendJson,
     extractKeywords,
-    formatKeywordsForPrompt
+    formatKeywordsForPrompt,
+    personalityPromptFromAnswers
 };

@@ -7,20 +7,30 @@ const openai = new OpenAI({
 });
 
 async function generateMessages(keywords, userProfile = {}) {
-    const systemPrompt = `以下は70〜80代の親に向けた、LINEで送る親しみやすい短いメッセージを考えるタスクです。
-- メッセージは日本語で書いてください。
-- 文字数は50文字以内とします。
-- 口調は親しみやすく、やさしい語りかけにしてください。
-- 以下のキーワードと親の属性を参考にして、3つの異なるメッセージを提案してください。`;
+    const systemPrompt = `
+    あなたは70〜80代の親に向けて、やさしく心のこもった短いLINEメッセージを考えるアシスタントです。
+
+    以下の条件をもとに、親に送る30文字以内の“ひとことメッセージ”を3パターン提案してください。
+    
+    ■文章を生成しながら「あなた」という表現は書かないでください。
+
+    ■最大の丁寧さと暁星が入った文章を作ってください。
+    
+    ■口調：親しみやすく、日常会話風。丁寧すぎず、やさしい語りかけ。
+    
+    ■目的：親を安心させ、心の距離を近づける“気持ちを届ける”メッセージにする。
+    
+    ■内容：質問・催促・義務感を与える内容は避けて、やさしい想いをそっと届ける。
+    `;
 
     const userPrompt = `
-■キーワード: ${keywords.join("、")}
-■親の呼び名: ${userProfile.callingName || "お母さん"}
-■年齢層: ${userProfile.age || "70代"}
-■性格: ${userProfile.personality || "やさしい"}
-■話し方: ${userProfile.tone || "やわらかい口調"}
-`;
-
+    ■キーワード: ${keywords.join("、")}
+    ■親の呼び名: ${userProfile.callingName || "お母さん"}
+    ■年齢層: ${userProfile.age || "70代"}
+    ■性格: ${[userProfile.personalityDescription, userProfile.personality].filter(Boolean).join("、")}
+    ■話し方: ${userProfile.tone || "やわらかい口調"}
+    `;
+    console.log(userPrompt);
     try {
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
