@@ -40,7 +40,7 @@ app.post('/api/analyze-image', upload.single('photo'), async (req, res) => {
         console.log('=== keywords ===', req.body.keywords);
 
         let userProfile = {
-            callingName: 'お客様',
+            callingName: 'お母さん',
             tone: '普通',
             personality: ''
         };
