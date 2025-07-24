@@ -1,0 +1,30 @@
+{
+    "name": "smapho365-server",
+    "version": "1.0.0",
+    "description": "Express Server for smapho365: LINE × ChatGPT × Vision AI integration",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "lint": "eslint ."
+    },
+    "engines": {
+        "node": "20"
+    },
+    "dependencies": {
+        "@google-cloud/vision": "^5.2.0",
+        "axios": "^1.6.8",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "multer": "^2.0.1",
+        "mysql2": "^3.14.2",
+        "openai": "^4.30.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.56.0",
+        "nodemon": "^3.0.3"
+    },
+    "license": "MIT",
+    "author": "Hendra"
+}
