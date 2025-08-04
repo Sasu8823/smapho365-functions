@@ -15,7 +15,7 @@ async function generateMessages(keywords, userProfile = {}) {
     However, comments shouldn't be limited to photos alone; think of words that capture the grandparents' memories and emotions about their family.
 
     Each message must be:
-    - No longer than 30 characters
+    - Around 50 characters or less (not strict)
     - Written in Japanese
     - Warm, informal, friendly, and emotionally resonant
     - Without using the word "あなた"
