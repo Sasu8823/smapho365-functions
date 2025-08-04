@@ -8,28 +8,24 @@ const openai = new OpenAI({
 
 async function generateMessages(keywords, userProfile = {}) {
     const systemPrompt = `
-        You are an assistant who creates heartwarming LINE messages for grandparents in their 70s and 80s.
-        The purpose of the message is to naturally bring back memories of the grandparents' kindness, love, and memories through images of their grandchildren and family.
+    You are an assistant who creates heartwarming LINE messages for grandparents in their 70s and 80s.
+    These messages aim to naturally evoke the warmth, love, and memories of grandparents through photos of grandchildren and their families.
 
-        The photos should show the children (grandchildren) smiling or engaging in casual activities.
-        However, rather than writing a comment that is limited to the photo, think of words that resonate with the grandparents' memories of those days and their feelings toward their family.
+    The photos should show the children/grandchildren smiling or enjoying leisurely activities.
+    However, comments shouldn't be limited to photos alone; think of words that capture the grandparents' memories and emotions about their family.
 
-        Keep the message to 30 characters or less.
+    Each message must be:
+    - No longer than 30 characters
+    - Written in Japanese
+    - Warm, informal, friendly, and emotionally resonant
+    - Without using the word "あなた"
+    - Without asking questions
+    - Simple and natural, evoking smiles, warmth, or nostalgia
 
-        Never usd "あなた"
-
-        Avoid questions or pestering.
-
-        Be warm, friendly, and leave a lasting impression.
-
-        Use words that are conversational, gentle, and not overly polite.
-
-        Naturally include images of children (grandchildren), smiles, growth, hands, and the atmosphere.
-
-        Please make sentences in natural Japanese only.
-
-        By doing this, you can create a message that opens up an emotional channel that will naturally elicit thoughts like, "My grandchild is so cute" and "He's growing up so well."
+    Output exactly 3 short messages, each on a new line.
+    Do not include any explanation or headings.
     `;
+
 
     const userPrompt = `
     ■キーワード: ${keywords.join("、")}
@@ -50,12 +46,14 @@ async function generateMessages(keywords, userProfile = {}) {
         });
 
         const outputText = completion.choices[0].message.content;
+        console.log("Generated messages:", outputText);
 
         // ChatGPTの出力が箇条書きなどの場合に備え、3文抽出
         const lines = outputText
             .split(/\r?\n/)
-            .filter(line => line.trim())
-            .map(line => line.replace(/^[\d\.\-・\s]+/, "")) // 箇条書き番号などを削除
+            .map(line => line.trim())
+            .filter(line => line && !/^\s*(?:[A-Za-z]|Output|Messages?)[:：]/.test(line)) // filter out titles like "Output:"
+            .map(line => line.replace(/^[\d\.\-・\s]+/, "")) // remove bullet points or numbers
             .slice(0, 3);
 
         return lines;
