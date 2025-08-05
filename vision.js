@@ -2,7 +2,6 @@
 
 // Google Cloud Vision API integration
 // TODO: Set up Google Cloud Vision client
-process.env.GOOGLE_APPLICATION_CREDENTIALS = './keys/vision-key.json';
 
 const vision = require('@google-cloud/vision');
 const { extractKeywords, sendJson } = require('./utils');
