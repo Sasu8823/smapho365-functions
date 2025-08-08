@@ -107,7 +107,7 @@ app.post('/api/analyze-image', upload.single('photo'), async (req, res) => {
         if (keywords) {
             allKeywords = keywords.split(/[\s,、]+/).filter(Boolean);
         }
-        allKeywords = [...new Set([...allKeywords, ...visionKeywords])].slice(0, 5);
+        allKeywords = [...new Set([...allKeywords, ...visionKeywords])].slice(0, 8);
 
         // --- 6. ChatGPT message generation ---
         let messages = [];

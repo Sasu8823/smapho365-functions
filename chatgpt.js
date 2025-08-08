@@ -1,30 +1,19 @@
 // functions/chatgpt.js
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const OpenAI = require("openai");
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+const systemPrompt = fs.readFileSync(
+    path.join(__dirname, 'sample_message.txt'),
+    'utf8'
+);
+
 async function generateMessages(keywords, userProfile = {}) {
-    const systemPrompt = `
-    You are an assistant who creates heartwarming LINE messages for grandparents in their 70s and 80s.
-    These messages aim to naturally evoke the warmth, love, and memories of grandparents through photos of grandchildren and their families.
-
-    The photos should show the children/grandchildren smiling or enjoying leisurely activities.
-    However, comments shouldn't be limited to photos alone; think of words that capture the grandparents' memories and emotions about their family.
-
-    Each message must be:
-    - Around 50 characters or less (not strict)
-    - Written in Japanese
-    - Warm, informal, friendly, and emotionally resonant
-    - Without using the word "あなた"
-    - Without asking questions
-    - Simple and natural, evoking smiles, warmth, or nostalgia
-
-    Output exactly 3 short messages, each on a new line.
-    Do not include any explanation or headings.
-    `;
 
 
     const userPrompt = `
