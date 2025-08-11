@@ -10,14 +10,42 @@ const utils = require('./utils');
 const axios = require('axios');
 const bodyParser = require('body-parser');
 const db = require('./db');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+const promptRoutes = require('./routes/promptRoutes');
+
+const app = express();
+app.use(cors({ origin: true }));
+app.use(express.json());
+app.use(cookieParser());
+app.use('/api/prompts', promptRoutes);
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Helper to set JWT as an HTTP-only cookie
+function setAuthCookie(res, payload) {
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
+    res.cookie('auth_token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+}
+
+// Middleware to verify JWT and protect routes
+function authenticateToken(req, res, next) {
+    const token = req.cookies.auth_token;
+    if (!token) return res.status(401).json({ message: '認証が必要です' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: '無効なトークンです' });
+        req.user = user;
+        next();
+    });
+}
 
 // Set up Google Cloud credentials if needed
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS);
 }
 
-const app = express();
-app.use(cors({ origin: true }));
 
 // Multer for file uploads (memory storage)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -118,7 +146,23 @@ app.post('/api/analyze-image', upload.single('photo'), async (req, res) => {
             return res.status(500).json({ error: 'メッセージ生成に失敗しました。' });
         }
 
-        // --- 7. Success response ---
+        // --- 7. Save generated messages to DB ---
+        try {
+            const conn = await db.getConnection();
+            const saveQuery = `
+            INSERT INTO Messages (message_text, created_at)
+            VALUES (?, NOW())
+            `;
+            for (const msg of messages) {
+                await conn.execute(saveQuery, [msg]);
+            }
+            conn.release();
+            console.log("Messages saved to DB.");
+        } catch (err) {
+            console.error("Failed to save messages:", err);
+        }
+
+        // --- 8. Success response ---
         res.json({
             keywords: allKeywords,
             messages
@@ -145,19 +189,49 @@ app.post('/api/vision', upload.single('photo'), async (req, res) => {
     }
 });
 
-// ChatGPT direct endpoint (optional)
-app.post('/api/chatgpt', express.json(), async (req, res) => {
+// POST /api/login
+app.post('/api/login', async (req, res) => {
+    console.log('Request body:', req.body);
+    const { username, password } = req.body || {};
+
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: '管理者名とパスワードを送ってください' });
+    }
+
     try {
-        const { keywords, userProfile } = req.body;
-        if (!keywords || !Array.isArray(keywords)) return res.status(400).json({ error: 'keywords配列が必要です' });
-        const messages = await chatgpt.generateMessages(keywords, userProfile || {});
-        res.json({ messages });
+        const conn = await db.getConnection();
+        const [rows] = await conn.execute(
+            'SELECT id, username, password FROM admin WHERE username = ? LIMIT 1',
+            [username]
+        );
+
+        if (rows.length === 0) {
+            return res.status(401).json({ success: false, message: '認証に失敗しました' });
+        }
+
+        const admin = rows[0];
+        // Hash input password with MD5
+        const hashedPassword = crypto.createHash('md5').update(password).digest('hex');
+
+        if (hashedPassword !== admin.password) {
+            return res.status(401).json({ success: false, message: '認証に失敗しました' });
+        }
+
+        // Login success — set cookie or token here
+        setAuthCookie(res, { adminId: admin.id, adminName: admin.username, role: 'admin' });
+
+        return res.json({ success: true, message: '管理者ログイン成功' });
+
     } catch (err) {
-        console.error('ChatGPT API error:', err);
-        res.status(500).json({ error: 'ChatGPT APIエラー' });
+        console.error('Admin login error:', err);
+        res.status(500).json({ success: false, message: 'サーバーエラー' });
     }
 });
 
+
+app.get('/api/protected-route', authenticateToken, (req, res) => {
+  res.json({ message: '認証済みユーザーのみアクセス可能', user: req.user });
+});
 
 
 app.post('/api/save-profile', express.json(), async (req, res) => {
@@ -287,6 +361,9 @@ app.post('/webhook', express.json(), async (req, res) => {
 
     res.status(200).end();
 });
+
+
+
 
 
 // 404 handler
