@@ -1,5 +1,4 @@
 // E: \LINE + ChatGPT\ smapho365\ functions\ index.js
-require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -14,6 +13,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const promptRoutes = require('./routes/promptRoutes');
+require('dotenv').config();
 
 const app = express();
 app.use(cors({ origin: true }));

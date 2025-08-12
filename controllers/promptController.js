@@ -1,37 +1,43 @@
-const PromptModel = require('../models/promptModel.js');
+// E:\LINE+ChatGPT\smapho365\functions\models\promptModel.js
+const db = require('../db.js');
 
-async function getPrompts(req, res) {
-    const prompts = await PromptModel.getAllPrompts();
-    res.json(prompts);
+async function getAllPrompts() {
+    const [rows] = await db.query('SELECT * FROM prompts');
+    return rows;
 }
 
-async function getPrompt(req, res) {
-    const prompt = await PromptModel.getPromptById(req.params.id);
-    if (!prompt) return res.status(404).json({ message: 'Prompt not found' });
-    res.json(prompt);
+async function getPromptById(id) {
+    const [rows] = await db.query('SELECT * FROM prompts WHERE id = ?', [id]);
+    return rows[0];
 }
 
-async function addPrompt(req, res) {
-    const newPrompt = await PromptModel.createPrompt(req.body);
-    console.log('New prompt created:', newPrompt);
-    
-    res.status(201).json(newPrompt);
+async function createPrompt(data) {
+    const { content } = data;
+    const [result] = await db.query(
+        'INSERT INTO prompts (content) VALUES (?)',
+        [content]
+    );
+    return { id: result.insertId, content };
 }
 
-async function editPrompt(req, res) {
-    const updatedPrompt = await PromptModel.updatePrompt(req.params.id, req.body);
-    res.json(updatedPrompt);
+async function updatePrompt(id, data) {
+    const { content } = data;
+    await db.query(
+        'UPDATE prompts SET content = ? WHERE id = ?',
+        [content, id]
+    );
+    return { id, content };
 }
 
-async function removePrompt(req, res) {
-    const result = await PromptModel.deletePrompt(req.params.id);
-    res.json(result);
+async function deletePrompt(id) {
+    await db.query('DELETE FROM prompts WHERE id = ?', [id]);
+    return { message: 'Prompt deleted' };
 }
 
 module.exports = {
-    getPrompts,
-    getPrompt,
-    addPrompt,
-    editPrompt,
-    removePrompt
+    getAllPrompts,
+    getPromptById,
+    createPrompt,
+    updatePrompt,
+    deletePrompt
 };

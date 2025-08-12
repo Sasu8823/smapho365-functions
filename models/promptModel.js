@@ -1,3 +1,4 @@
+// E:\LINE+ChatGPT\smapho365\functions\models\promptModel.js
 const db = require('../db.js');
 
 async function getAllPrompts() {
@@ -12,11 +13,14 @@ async function getPromptById(id) {
 
 async function createPrompt(data) {
     const { content } = data;
-    const [result] = await db.query(
-        'INSERT INTO prompts (content) VALUES (?, ?)',
-        [content]
-    );
-    return { id: result.insertId, content };
+    console.log("Creating prompt with content:", content);
+    if (!content) {  console.error();  }
+    
+    // const [result] = await db.query(
+    //     'INSERT INTO prompts (content) VALUES (?)',
+    //     [content]
+    // );
+    // return { id: result.insertId, content };
 }
 
 async function updatePrompt(id, data) {
